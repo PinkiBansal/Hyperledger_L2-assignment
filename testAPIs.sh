@@ -181,8 +181,8 @@ curl -s -X POST \
 }"
 echo
 echo
-
-echo "POST invoke chaincode on peers of Org1 and Org2"
+#####Added one record
+echo "POST Added 1st record"
 echo
 VALUES=$(curl -s -X POST \
   http://localhost:4000/channels/mychannel/chaincodes/mycc \
@@ -194,19 +194,64 @@ VALUES=$(curl -s -X POST \
   \"args\":[\"gadget1\",\"red\",\"2018\",\"pinki\"]
 }")
 echo $VALUES
+#####Added second record
+echo "POST Added 2nd record"
+echo
+VALUES=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/mycc \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json" \
+  -d "{
+  \"peers\": [\"peer0.org1.example.com\",\"peer0.org2.example.com\"],
+  \"fcn\":\"createGadget\",
+  \"args\":[\"gadget2\",\"red\",\"2018\",\"pinki\"]
+}")
+echo $VALUES
+
+#####Fetch all records
+
+echo
+echo
+
+echo "Fetch all records"
+echo
+VALUES=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/mycc \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json" \
+  -d "{
+  \"peers\": [\"peer0.org1.example.com\",\"peer0.org2.example.com\"],
+  \"fcn\":\"getGadgetByRange\",
+  \"args\":[\"gadget1\",\"\"]
+}")
+echo $VALUES
+
+
+echo "Change ownership"
+VALUES=$(curl -s -X POST\
+  http://localhost:4000/channels/mychannel/chaincodes/mycc \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json" \
+  -d "{   \"peers\": [\"peer0.org1.example.com\",\"peer0.org2.example.com\"],
+  \"fcn\":\"changeGadget\",
+  \"args\":[\"gadget1\",\"Neha\"]
+}")
+
+
+
 # Assign previous invoke transaction id  to TRX_ID
 MESSAGE=$(echo $VALUES | jq -r ".message")
 TRX_ID=${MESSAGE#*ID: }
 echo
 
-echo "GET query chaincode on peer1 of Org1"
-echo
-curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/chaincodes/mycc?peer=peer0.org1.example.com&fcn=query&args=%5B%22a%22%5D" \
-  -H "authorization: Bearer $ORG1_TOKEN" \
-  -H "content-type: application/json"
-echo
-echo
+# echo "GET query chaincode on peer1 of Org1"
+# echo
+# curl -s -X GET \
+#   "http://localhost:4000/channels/mychannel/chaincodes/mycc?peer=peer0.org1.example.com&fcn=query&args=%5B%22a%22%5D" \
+#   -H "authorization: Bearer $ORG1_TOKEN" \
+#   -H "content-type: application/json"
+# echo
+# echo
 
 echo "GET query Block by blockNumber"
 echo
